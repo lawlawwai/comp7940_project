@@ -18,7 +18,7 @@ firebase_admin.initialize_app(cred, {
     # 'storageBucket': 'datebot-f12cb.appspot.com'
 })
 ref = db.reference('/')
-users_ref = ref.child('users')
+users_ref = ref.child('users') 
 
 
 def main():

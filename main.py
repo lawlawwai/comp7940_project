@@ -20,7 +20,7 @@ firebase_admin.initialize_app(cred, {
 ref = db.reference('/')
 users_ref = ref.child('users') 
 
-
+ 
 def main():
     # Load your token and create an Updater for your Bot
     TOKEN = os.getenv('BOTAPIKEY')

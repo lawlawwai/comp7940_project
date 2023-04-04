@@ -30,8 +30,11 @@ def main():
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
     # register a dispatcher to handle message: here we register an echo dispatcher
 
+    echo_photo_handler = MessageHandler(Filters.photo, echo_photo)
     dispatcher.add_handler(CommandHandler('start', start))
     dispatcher.add_handler(CommandHandler('help', help_cmd))
+    dispatcher.add_handler(CommandHandler(['photo', 'del_photo'], set_photo))
+    dispatcher.add_handler(CommandHandler(['delete_match'], delete_match))
 
     updater.start_polling()
     updater.idle()
@@ -45,6 +48,39 @@ def start(update: Update, context: CallbackContext) -> None:
 def help_cmd(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Please fill below form to register.')
     update.message.reply_text('Name: \nAge: \nHeight: ')
+
+def delete_match(update: Update, context: CallbackContext) -> None:
+    user_id = str(update.effective_user.id)
+    match_person_id = users_ref.child(user_id).child("Match").get()
+    if match_person_id is None or match_person_id == "Waiting":
+        update.message.reply_text("No match")
+        return
+    users_ref.child(user_id).child("Match").delete()
+    users_ref.child(match_person_id).update({"Match": "Waiting"})
+    update.message.reply_text("Deleted match")
+    context.bot.send_message(chat_id=match_person_id, text="Match is deleted")
+
+
+def set_photo(update: Update, context: CallbackContext) -> None:
+    user_id = str(update.effective_user.id)
+    user_ref = users_ref.child(user_id)
+    if update.message.text == "/photo":
+        user_ref.update({"Photo": "True"})
+        update.message.reply_text("Send new photo to update")
+    else:
+        user_ref.update({"Photo": "False"})
+        update.message.reply_text("Photo deleted")
+
+
+def echo_photo(update: Update, context: CallbackContext) -> None:
+    user_id = str(update.effective_user.id)
+    user_ref = users_ref.child(user_id)
+    photo_status = user_ref.child("Photo").get()
+    input_photo = update.message.photo[1].file_id
+    if photo_status == "True":
+        user_ref.update({"Photo": input_photo})
+        update.message.reply_text("Update photo")
+    # context.bot.send_photo(chat_id=user_id, photo=input_photo)
 
 
 if __name__ == '__main__':

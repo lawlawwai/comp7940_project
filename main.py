@@ -40,6 +40,7 @@ def main():
     dispatcher.add_handler(CommandHandler('set', set_sex))
     echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
     dispatcher.add_handler(echo_handler)
+    dispatcher.add_handler(echo_photo_handler)
 
     updater.start_polling()
     updater.idle()
